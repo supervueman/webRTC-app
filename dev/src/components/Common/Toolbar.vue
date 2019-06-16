@@ -4,8 +4,8 @@
       .logo
         h3 WebRTC
       common-link(
-        link="/streams"
-        text="Streams"
+        link="/streamers"
+        text="Streamers"
         v-if="profileId !== ''"
       )
       .divider

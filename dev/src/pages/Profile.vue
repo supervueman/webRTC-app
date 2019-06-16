@@ -2,7 +2,10 @@
   section.main-sect(v-if="profile")
     .container
       video#video
-      button#callButton(@click="startStream") ✆
+      common-button(
+        text="Start stream"
+        @onClick="startStream"
+      )
 </template>
 
 <script>

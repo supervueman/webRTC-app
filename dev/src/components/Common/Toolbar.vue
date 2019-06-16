@@ -36,11 +36,13 @@ export default {
 </script>
 
 <style lang="sass">
+@import "@/assets/sass/_vars.sass"
 .toolbar
   // Position block
   position: fixed
   top: 0
   left: 0
+  z-index: 100
 
   // Size block
   width: 100%
@@ -53,6 +55,9 @@ export default {
 
   // Color block
   background-color: #030823
+
+  // Effect block
+  box-shadow: 0 0 10px rgba($pink ,0.5)
 
 </style>
 

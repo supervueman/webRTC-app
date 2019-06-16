@@ -29,11 +29,16 @@ export default {
 </script>
 
 <style lang="sass">
-  .view
-    // Margin/Padding block
-    padding-top: 80px
-    
-    // Size block
-    width: 100%
+@import "@/assets/sass/_vars.sass"
+body
+  // Color
+  background-color: $dark
+  color: $green
+.view
+  // Margin/Padding block
+  padding-top: 80px
+  
+  // Size block
+  width: 100%
 </style>
 

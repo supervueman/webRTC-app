@@ -1,7 +1,8 @@
 <template lang="pug">
   section.main-sect(v-if="profile")
     .container
-      video#video
+      video#localVideo
+      video#remoteVideo
       button#callButton(@click="startStream") ✆
 </template>
 
@@ -38,18 +39,33 @@ export default {
       );
     },
 
-    createPeerConnection() {
+    socketActivate() {
+      this.socket = io.connect("http://localhost:3000", { port: 3000 });
+
+      this.socket.on("message", function(message) {
+        if (message.type === "offer") {
+          this.pc.setRemoteDescription(new SessionDescription(message));
+          createAnswer();
+        } else if (message.type === "answer") {
+          this.pc.setRemoteDescription(new SessionDescription(message));
+        } else if (message.type === "candidate") {
+          const candidate = new IceCandidate({
+            sdpMLineIndex: message.label,
+            candidate: message.candidate
+          });
+          this.pc.addIceCandidate(candidate);
+        }
+      });
+    },
+    gotStream(stream) {
       const PeerConnection =
         window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
       const IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
       const SessionDescription =
         window.mozRTCSessionDescription || window.RTCSessionDescription;
-      this.pc = new PeerConnection(null);
-    },
+      document.getElementById("callButton").style.display = "inline-block";
 
-    gotStream(stream) {
-      this.createPeerConnection();
-      const video = document.getElementById("video");
+      const video = document.getElementById("localVideo");
 
       try {
         video.srcObject = stream;
@@ -59,13 +75,14 @@ export default {
 
       video.play();
 
+      this.pc = new PeerConnection(null);
       this.pc.addStream(stream);
       this.pc.onicecandidate = this.gotIceCandidate;
+      this.pc.onaddstream = this.gotRemoteStream;
 
       this.createOffer();
       this.socketActivate();
     },
-
     createOffer() {
       this.pc.createOffer(
         this.gotLocalDescription,
@@ -75,12 +92,19 @@ export default {
         { mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true } }
       );
     },
-
+    createAnswer() {
+      this.pc.createAnswer(
+        this.gotLocalDescription,
+        function(error) {
+          console.log(error);
+        },
+        { mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true } }
+      );
+    },
     gotLocalDescription(description) {
       this.pc.setLocalDescription(description);
       this.sendMessage(description);
     },
-
     gotIceCandidate(event) {
       if (event.candidate) {
         this.sendMessage({
@@ -91,22 +115,16 @@ export default {
         });
       }
     },
+    gotRemoteStream(event) {
+      try {
+        document.getElementById("remoteVideo").srcObject = event.stream;
+      } catch (error) {
+        document.getElementById("remoteVideo").src = window.URL.createObjectURL(
+          event.stream
+        );
+      }
 
-    socketActivate() {
-      this.socket = io.connect(process.env.VUE_APP_SERVER_URL_DEV);
-
-      this.socket.on("message", function(message) {
-        if (message.type === "offer") {
-          this.pc.setRemoteDescription(new SessionDescription(message));
-          createAnswer();
-        } else if (message.type === "candidate") {
-          const candidate = new IceCandidate({
-            sdpMLineIndex: message.label,
-            candidate: message.candidate
-          });
-          this.pc.addIceCandidate(candidate);
-        }
-      });
+      document.getElementById("remoteVideo").play();
     },
 
     sendMessage(message) {
@@ -117,22 +135,8 @@ export default {
 </script>
 
 <style lang="sass">
-@import "@/assets/sass/_vars.sass"
-#video
-  // Size block
-  width: 100%
-
-  // Color block
-  background-color: $dark
-
-  // Border block
-  border: 3px solid $dark
-  border-top-color: $pink
-  border-bottom-color: $green
-  border-right-color: $yellow
-  border-left-color: $blue
-
-  // Effect block
-  // filter: contrast(1.5) hue-rotate(150deg) saturate(2.2)
+  video
+    width: 100%
+    -webkit-filter: contrast(1.5) hue-rotate(150deg) saturate(2.2)
 </style>
 

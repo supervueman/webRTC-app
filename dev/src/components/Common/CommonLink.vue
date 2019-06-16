@@ -19,53 +19,57 @@ export default {
 </script>
 
 <style lang="sass">
-  .link
-    // Position block
-    position: relative
+@import "@/assets/sass/_vars.sass"
+.link
+  // Position block
+  position: relative
 
-    // Font block
-    font-size: 16px
+  // Font block
+  font-size: 16px
+
+  // Color block
+  color: $green
+
+  // Margin/Padding block
+  margin: 10px
+
+  // Other block
+  cursor: pointer
+
+  // Pseudo block
+  &::after, &::before
+    // Content block
+    content: ''
+
+    // Position block
+    position: absolute
+    bottom: 0
+
+    // Size block
+    width: 0
+    height: 1px
 
     // Color block
-    color: #04ff00
+    background-color: $pink
 
-    // Margin/Padding block
-    margin: 10px
+    // Animation block
+    transition: width 0.1s ease-in-out
 
-    // Pseudo block
+  // Edit pseudo block
+  &::before
+    // Position block
+    left: 0
+  &::after
+    // Position block
+    right: 0
+
+    // Color block
+    background-color: $blue
+
+  // Hover block
+  &:hover
     &::after, &::before
-      // Content block
-      content: ''
-
-      // Position block
-      position: absolute
-      bottom: 0
-
       // Size block
-      width: 0
-      height: 1px
-
-      // Color block
-      background-color: #d459f9
-
-      // Animation block
-      transition: width 0.5s ease-in-out
-
-    // Edit pseudo block
-    &::before
-      // Position block
-      left: 0
-    &::after
-      // Position block
-      right: 0
-
-      // Color block
-      background-color: #faff00
-
-    // Hover block
-    &:hover
-      &::after, &::before
-        // Size block
-        width: 50%
+      width: 50%
 </style>
 

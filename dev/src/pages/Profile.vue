@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.main-sect(v-if="profile")
+  section(v-if="profile")
     .container
       video#video
       common-button(
@@ -134,8 +134,5 @@ export default {
   border-bottom-color: $green
   border-right-color: $yellow
   border-left-color: $blue
-
-  // Effect block
-  // filter: contrast(1.5) hue-rotate(150deg) saturate(2.2)
 </style>
 

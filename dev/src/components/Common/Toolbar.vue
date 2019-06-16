@@ -13,12 +13,17 @@
         link="/signin"
         text="Sign in"
         v-if="profileId === ''"
-      ) Sign In
+      )
       common-link(
         link="/signup"
         text="Sign up"
         v-if="profileId === ''"
-      ) Sign Up
+      )
+      common-link(
+        link="/profile"
+        text="Profile"
+        v-if="profileId !== ''"
+      )
       .link(
         @click="logout"
         v-if="profileId !== ''"

@@ -13,6 +13,7 @@ export default {
     }
   },
   mounted() {
+    console.log(navigator);
     navigator.getUserMedia =
       navigator.getUserMedia ||
       navigator.mozGetUserMedia ||
@@ -44,5 +45,6 @@ export default {
 <style lang="sass">
   #video
     width: 100%
+    -webkit-filter: contrast(1.5) hue-rotate(150deg) saturate(2.2)
 </style>
 

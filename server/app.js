@@ -5,13 +5,9 @@ const path = require('path');
 const mongoose = require('mongoose');
 const mainRouter = require('./api/routers/main.js');
 const user = require('./api/routers/user.js');
-
-mongoose.connect(
-	`mongodb://${'localhost:27017'}/template`, {
-		useNewUrlParser: true,
-		useCreateIndex: true
-	}
-);
+const {
+	dbconnect
+} = require('./utils/database.js');
 
 const app = express();
 
@@ -50,4 +46,10 @@ app.use((error, req, res) => {
 
 const port = process.env.PORT || 5000;
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+dbconnect(async () => {
+	const server = await app.listen(port, () => console.log(`Example app listening on http://localhost:${port}!`));
+	const io = require('./socket').init(server);
+	io.on('connection', socket => {
+		console.log('Client connected');
+	})
+});

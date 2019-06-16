@@ -1,0 +1,22 @@
+{
+	"name": "test_brain",
+	"version": "1.0.0",
+	"main": "index.js",
+	"author": "Rinat",
+	"license": "MIT",
+	"scripts": {
+		"server:dev": "NODE_ENV=development cd server && nodemon ./app.js",
+		"front:dev": "NODE_ENV=development cd dev && npm run serve",
+		"front:build": "cd dev && npm run build",
+		"start": "NODE_ENV=production cd server && node app.js"
+	},
+	"dependencies": {
+		"bcrypt": "^3.0.6",
+		"body-parser": "^1.19.0",
+		"express": "^4.17.0",
+		"jsonwebtoken": "^8.5.1",
+		"mongoose": "^5.5.10",
+		"nodemon": "^1.19.0",
+		"serve-static": "^1.14.1"
+	}
+}

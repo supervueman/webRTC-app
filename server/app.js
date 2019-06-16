@@ -60,13 +60,14 @@ dbconnect(async () => {
 		}
 
 		socket.on('message', message => {
+			// console.log(message)
 			log('Got message: ', message);
 			socket.broadcast.emit('message', message); // should be room only
 		});
 
 		socket.on('create or join', room => {
 			const numClients = io.sockets.clients(room).length;
-
+			// console.log(room)
 			log('Room ' + room + ' has ' + numClients + ' client(s)');
 			log('Request to create or join room', room);
 

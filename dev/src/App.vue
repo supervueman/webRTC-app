@@ -20,9 +20,9 @@ export default {
       access_token !== undefined;
     if (isAccessToken) {
       await this.$store.dispatch("authenticate/fetchProfile");
-      this.$router.push("/profile");
+      // this.$router.push("/profile");
     } else {
-      this.$router.push("/signin");
+      // this.$router.push("/signin");
     }
   }
 };

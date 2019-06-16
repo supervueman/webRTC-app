@@ -1,7 +1,6 @@
 <template lang="pug">
   div
-    video#video(autoplay muted)
-    button#callButton Create offer
+    video#remoteVideo(autoplay muted)
 </template>
 
 <script>
@@ -20,35 +19,15 @@ export default {
       navigator.mozGetUserMedia ||
       navigator.webkitGetUserMedia;
 
-    let pc; // PeerConnection
+    let pc;
 
     pc = new PeerConnection(null);
 
     pc.onicecandidate = gotIceCandidate;
+    pc.onaddstream = gotRemoteStream;
 
-    document
-      .getElementById("callButton")
-      .addEventListener("click", createOffer);
-
-    navigator.getUserMedia({ audio: true, video: true }, gotStream, error => {
-      console.log(error);
-    });
-
-    function gotStream(stream) {
-      const video = document.getElementById("video");
-
-      try {
-        video.srcObject = stream;
-      } catch (error) {
-        video.src = window.URL.createObjectURL(stream);
-      }
-
-      pc = new PeerConnection(null);
-      pc.addStream(stream);
-    }
-
-    function createOffer() {
-      pc.createOffer(
+    function createAnswer() {
+      pc.createAnswer(
         gotLocalDescription,
         error => {
           console.log(error);
@@ -73,6 +52,16 @@ export default {
       }
     }
 
+    function gotRemoteStream(event) {
+      const video = document.getElementById("remoteVideo");
+      try {
+        video.srcObject = event.stream;
+      } catch (error) {
+        video.src = window.URL.createObjectURL(event.stream);
+      }
+      pc.addStream(event.stream);
+    }
+
     ////////////////////////////////////////////////
     // Socket.io
 
@@ -85,6 +74,7 @@ export default {
     socket.on("message", message => {
       if (message.type === "offer") {
         pc.setRemoteDescription(new SessionDescription(message));
+        createAnswer();
       } else if (message.type === "answer") {
         pc.setRemoteDescription(new SessionDescription(message));
       } else if (message.type === "candidate") {

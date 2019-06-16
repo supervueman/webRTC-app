@@ -1,6 +1,14 @@
 <template lang="pug">
   header.toolbar
-    .container.d-flex.content-end
+    .container.d-flex.align-center
+      .logo
+        h3 WebRTC
+      common-link(
+        link="/streams"
+        text="Streams"
+        v-if="profileId !== ''"
+      )
+      .divider
       common-link(
         link="/signin"
         text="Sign in"
@@ -58,6 +66,18 @@ export default {
 
   // Effect block
   box-shadow: 0 0 10px rgba($pink ,0.5)
+
+  .link:last-child
+    // Margin/Padding block
+    margin-right: 0
+
+.logo
+  // Margin/Padding block
+  margin-right: 20px
+
+.divider
+  // Size block
+  flex: 1
 
 </style>
 

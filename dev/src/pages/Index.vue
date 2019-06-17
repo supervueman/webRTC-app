@@ -20,11 +20,9 @@ export default {
       navigator.mozGetUserMedia ||
       navigator.webkitGetUserMedia;
 
-    let pc; // PeerConnection
+    const pc = new PeerConnection(null);
 
-    pc = new PeerConnection(null);
-
-    pc.onicecandidate = gotIceCandidate;
+    // pc.onicecandidate = gotIceCandidate;
 
     document
       .getElementById("callButton")

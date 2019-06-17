@@ -2,7 +2,8 @@
   header.toolbar
     .container.d-flex.align-center
       .logo
-        h3 WebRTC
+        h3
+          router-link.logo-link(to="/") WebRTC
       common-link(
         link="/streamers"
         text="Streamers"
@@ -79,6 +80,13 @@ export default {
 .logo
   // Margin/Padding block
   margin-right: 20px
+  &-link
+    // Display block
+    display: flex
+    align-items: center
+
+    // Color block
+    color: $green
 
 .divider
   // Size block

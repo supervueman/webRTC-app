@@ -10,6 +10,7 @@
 
 <script>
 import io from "socket.io-client";
+
 export default {
   name: "Streamer",
   data() {
@@ -25,58 +26,48 @@ export default {
   },
 
   mounted() {
-    navigator.getUserMedia =
-      navigator.getUserMedia ||
-      navigator.mozGetUserMedia ||
-      navigator.webkitGetUserMedia;
-
     const PeerConnection =
       window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
     const IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
     const SessionDescription =
       window.mozRTCSessionDescription || window.RTCSessionDescription;
 
-    let pc; // PeerConnection
+    navigator.getUserMedia =
+      navigator.getUserMedia ||
+      navigator.mozGetUserMedia ||
+      navigator.webkitGetUserMedia;
 
-    pc = new PeerConnection(null);
+    const pc = new PeerConnection(null);
+
     pc.onaddstream = gotRemoteStream;
-    pc.onicecandidate = gotIceCandidate;
+
+    function createAnswer() {
+      pc.createAnswer(
+        gotLocalDescription,
+        error => {
+          console.log(error);
+        },
+        { mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true } }
+      );
+    }
 
     function gotLocalDescription(description) {
       pc.setLocalDescription(description);
       sendMessage(description);
     }
 
-    function gotIceCandidate(event) {
-      if (event.candidate) {
-        sendMessage({
-          type: "candidate",
-          label: event.candidate.sdpMLineIndex,
-          id: event.candidate.sdpMid,
-          candidate: event.candidate.candidate
-        });
-      }
-    }
-
     function gotRemoteStream(event) {
-      console.log(event.stream);
       const video = document.getElementById("video");
       try {
         video.srcObject = event.stream;
       } catch (error) {
         video.src = window.URL.createObjectURL(event.stream);
       }
+      pc.addStream(event.stream);
     }
 
-    function createAnswer() {
-      pc.createAnswer(
-        gotLocalDescription,
-        function(error) {
-          console.log(error);
-        },
-        { mandatory: { OfferToReceiveAudio: true, OfferToReceiveVideo: true } }
-      );
-    }
+    ////////////////////////////////////////////////
+    // Socket.io
 
     const socket = io.connect(process.env.VUE_APP_SERVER_URL_DEV);
 
@@ -84,17 +75,11 @@ export default {
       socket.emit("message", message);
     }
 
-    socket.on("message", function(message) {
-      // console.log(message);
+    socket.on("message", message => {
       if (message.type === "offer") {
-        console.log("offer");
         pc.setRemoteDescription(new SessionDescription(message));
         createAnswer();
-      } else if (message.type === "answer") {
-        console.log("answer");
-        pc.setRemoteDescription(new SessionDescription(message));
       } else if (message.type === "candidate") {
-        console.log(message);
         const candidate = new IceCandidate({
           sdpMLineIndex: message.label,
           candidate: message.candidate

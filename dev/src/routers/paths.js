@@ -26,6 +26,6 @@ export default [{
   {
     path: '/streamers/:id',
     name: 'streamer',
-    component: 'Streamer2'
+    component: 'Streamer'
   }
 ]

@@ -1,10 +1,9 @@
 <template lang="pug">
-  section.main-sect(v-if="profile")
+  section(v-if="profile")
     .container
-      common-video#video
-      common-button(
+      common-video#video(autoplay muted)
+      common-button#callButton(
         text="See stream"
-        @onClick="seeStream"
       )
 </template>
 
@@ -37,12 +36,27 @@ export default {
       navigator.mozGetUserMedia ||
       navigator.webkitGetUserMedia;
 
-    const pc = new PeerConnection(null);
+    let pc = new PeerConnection(null);
 
+    pc.onicecandidate = gotIceCandidate;
     pc.onaddstream = gotRemoteStream;
 
-    function createAnswer() {
-      pc.createAnswer(
+    document
+      .getElementById("callButton")
+      .addEventListener("click", createOffer);
+
+    function gotRemoteStream(event) {
+      const video = document.getElementById("video");
+      try {
+        video.srcObject = event.stream;
+      } catch (error) {
+        video.src = window.URL.createObjectURL(event.stream);
+      }
+      pc.addStream(event.stream);
+    }
+
+    function createOffer() {
+      pc.createOffer(
         gotLocalDescription,
         error => {
           console.log(error);
@@ -56,14 +70,15 @@ export default {
       sendMessage(description);
     }
 
-    function gotRemoteStream(event) {
-      const video = document.getElementById("video");
-      try {
-        video.srcObject = event.stream;
-      } catch (error) {
-        video.src = window.URL.createObjectURL(event.stream);
+    function gotIceCandidate(event) {
+      if (event.candidate) {
+        sendMessage({
+          type: "candidate",
+          label: event.candidate.sdpMLineIndex,
+          id: event.candidate.sdpMid,
+          candidate: event.candidate.candidate
+        });
       }
-      pc.addStream(event.stream);
     }
 
     ////////////////////////////////////////////////
@@ -76,9 +91,8 @@ export default {
     }
 
     socket.on("message", message => {
-      if (message.type === "offer") {
+      if (message.type === "answer") {
         pc.setRemoteDescription(new SessionDescription(message));
-        createAnswer();
       } else if (message.type === "candidate") {
         const candidate = new IceCandidate({
           sdpMLineIndex: message.label,

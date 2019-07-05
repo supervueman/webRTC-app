@@ -60,7 +60,7 @@ dbconnect(async () => {
 		}
 
 		socket.on('message', message => {
-			// console.log(message)
+			console.log(message)
 			log('Got message: ', message);
 			socket.broadcast.emit('message', message); // should be room only
 		});

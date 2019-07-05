@@ -1,9 +1,10 @@
 <template lang="pug">
-  section(v-if="profile")
+  section.main-sect(v-if="profile")
     .container
       common-video#video(autoplay muted)
-      common-button#callButton(
+      common-button(
         text="Start stream"
+        @onClick="seeStream"
       )
 </template>
 
@@ -30,15 +31,11 @@ export default {
       navigator.mozGetUserMedia ||
       navigator.webkitGetUserMedia;
 
-    const pc = new PeerConnection(null);
+    let pc = new PeerConnection(null);
 
-    pc.onicecandidate = gotIceCandidate;
+    pc.onaddstream = gotRemoteStream;
 
-    document
-      .getElementById("callButton")
-      .addEventListener("click", createOffer);
-
-    navigator.getUserMedia({ audio: true, video: true }, gotStream, error => {
+    navigator.getUserMedia({ audio: false, video: true }, gotStream, error => {
       console.log(error);
     });
 
@@ -54,8 +51,8 @@ export default {
       pc.addStream(stream);
     }
 
-    function createOffer() {
-      pc.createOffer(
+    function createAnswer() {
+      pc.createAnswer(
         gotLocalDescription,
         error => {
           console.log(error);
@@ -69,15 +66,14 @@ export default {
       sendMessage(description);
     }
 
-    function gotIceCandidate(event) {
-      if (event.candidate) {
-        sendMessage({
-          type: "candidate",
-          label: event.candidate.sdpMLineIndex,
-          id: event.candidate.sdpMid,
-          candidate: event.candidate.candidate
-        });
+    function gotRemoteStream(event) {
+      const video = document.getElementById("video");
+      try {
+        video.srcObject = event.stream;
+      } catch (error) {
+        video.src = window.URL.createObjectURL(event.stream);
       }
+      pc.addStream(event.stream);
     }
 
     ////////////////////////////////////////////////
@@ -90,8 +86,10 @@ export default {
     }
 
     socket.on("message", message => {
-      if (message.type === "answer") {
+      console.log(message);
+      if (message.type === "offer") {
         pc.setRemoteDescription(new SessionDescription(message));
+        createAnswer();
       } else if (message.type === "candidate") {
         const candidate = new IceCandidate({
           sdpMLineIndex: message.label,
@@ -103,7 +101,10 @@ export default {
   },
 
   methods: {
-    startStream() {}
+    seeStream() {
+      const video = document.getElementById("video");
+      video.play();
+    }
   }
 };
 </script>
